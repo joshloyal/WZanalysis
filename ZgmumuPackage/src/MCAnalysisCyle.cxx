@@ -144,7 +144,7 @@ void MCAnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) thro
   // loop through the truth particles
   TruthMuons = m_TruthReader.getTruthMuons();
 
-  if (TruthMuons != 2) continue;
+  if (TruthMuons.size() != 2) throw SError( SError::SkipEvent );
 
   Muon *truthmuon1 = TruthMuons.at(0);
   Muon *truthmuon2 = TruthMuons.at(1);

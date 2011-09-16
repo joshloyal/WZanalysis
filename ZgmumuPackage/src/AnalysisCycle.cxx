@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <iostream>
 
+// This line determines which ExecuteEvent method to use
+#define ANALYSIS_TYPE TRUTH_TYPE
+
 using AnalysisUtils::dR;
 
 ClassImp( AnalysisCycle );
@@ -113,6 +116,9 @@ void AnalysisCycle::BeginInputFile( const SInputData& inputData) throw( SError )
 }
 
 // Section: Event Execution {{{1
+
+#if ANALYSIS_TYPE == ZGMUMU_TYPE
+// Subsection: Zgmumu Analysis
 void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw( SError ) {
    
    m_logger << DEBUG << "** Executing Event Selection **" << SLogger::endmsg;
@@ -215,7 +221,7 @@ void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw(
   eventCutFlow.passCut();
 
   m_logger << DEBUG << "** Found a Z! **" << SLogger::endmsg;
-/* 
+ 
   // Subsection: Photon Selection
 
   m_PhotonReader.getPhotons(allPhotons,m_EventNumber);    // place all the photons in the event in a vector
@@ -230,9 +236,9 @@ void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw(
       if(! photonSelector.getGoodPhotons(allPhotons.begin(), allPhotons.end(), muon1, muon2, goodPhotons) ) throw SError( SError::SkipEvent );     
   }
   sort(goodPhotons.rbegin(), goodPhotons.rend(), AnalysisUtils::ptPhotonSort);
-  Photon *photon = goodPhotons.at(0);
+  //Photon *photon = goodPhotons.at(0);
 
-  eventCutFlow.passCut();                                                                                                                         // check if the event has at least one good photon
+  eventCutFlow.passCut();                   // check if the event has at least one good photon
 
   m_logger << DEBUG << "** Selected at Least One Good Photon **" << SLogger::endmsg;
 
@@ -247,7 +253,7 @@ void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw(
   eventCutFlow.passCut();
  
   m_logger << DEBUG << "** Selected Isolated Photon **" << SLogger::endmsg;
-*/ 
+
   m_logger << DEBUG << "Event passed.  Copying variables to output tree." << SLogger::endmsg;
 
   // copy output variables to the output tree
@@ -275,8 +281,13 @@ void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw(
   o_muonIndex.push_back(antimuon->Index);
   //o_photonIndex.push_back(photon->Index);
 
-  return;
+  return; 
 }
+
+#elif ANALYSIS_TYPE == TRUTH_TYPE
+void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw( SError ) {
+}
+#endif
 
 // Section: Cut Flow Logging {{{1
 void AnalysisCycle::EndMasterInputData( const SInputData& ) throw( SError ) {
