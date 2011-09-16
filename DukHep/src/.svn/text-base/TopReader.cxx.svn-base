@@ -1,0 +1,72 @@
+////bin/dukhep_create_reader.py -n TopReader ../Macros/TopMacros.dat
+#include "include/TopReader.h"
+TopReader::TopReader(SCycleBaseNTuple * ownr): owner(ownr),
+m_RunNumber(0),
+m_EventNumber(0),
+m_LumiBlock(0),
+m_PrimaryVertexType(0),
+m_PrimaryVertexNumTracks(0),
+m_MetForTopAna(0),
+m_MetForTopAnaPhi(0),
+m_NumPrimaryVertices(0),
+m_NumTopElectrons(0),
+m_NumTopMuons(0),
+m_NumTopJets(0),
+m_IndexTopElectron(0),
+m_IndexTopMuon(0),
+m_IndexTopJet(0),
+m_UseTopJet(0),
+m_TopEleInTrigger(0),
+m_TopMuInTrigger(0),
+m_OverlapEleMu(0)
+{}
+void TopReader::ConnectVariables(std::string treename){
+  owner->ConnectVariable( treename.c_str(), VarName("RunNumber").c_str(), m_RunNumber );
+  owner->ConnectVariable( treename.c_str(), VarName("EventNumber").c_str(), m_EventNumber );
+  owner->ConnectVariable( treename.c_str(), VarName("lbn").c_str(), m_LumiBlock );
+  owner->ConnectVariable( treename.c_str(), VarName("vxp_type").c_str(), m_PrimaryVertexType );
+  owner->ConnectVariable( treename.c_str(), VarName("vxp_nTracks").c_str(), m_PrimaryVertexNumTracks );
+  owner->ConnectVariable( treename.c_str(), VarName("topMET_et").c_str(), m_MetForTopAna );
+  owner->ConnectVariable( treename.c_str(), VarName("topMET_phi").c_str(), m_MetForTopAnaPhi );
+  owner->ConnectVariable( treename.c_str(), VarName("vxp_n").c_str(), m_NumPrimaryVertices );
+  owner->ConnectVariable( treename.c_str(), VarName("topEl_n").c_str(), m_NumTopElectrons );
+  owner->ConnectVariable( treename.c_str(), VarName("topMu_n").c_str(), m_NumTopMuons );
+  owner->ConnectVariable( treename.c_str(), VarName("topJet_n").c_str(), m_NumTopJets );
+  owner->ConnectVariable( treename.c_str(), VarName("topEl_index").c_str(), m_IndexTopElectron );
+  owner->ConnectVariable( treename.c_str(), VarName("topMu_index").c_str(), m_IndexTopMuon );
+  owner->ConnectVariable( treename.c_str(), VarName("topJet_index").c_str(), m_IndexTopJet );
+  owner->ConnectVariable( treename.c_str(), VarName("topJet_use").c_str(), m_UseTopJet );
+  owner->ConnectVariable( treename.c_str(), VarName("topEl_inTrigger").c_str(), m_TopEleInTrigger );
+  owner->ConnectVariable( treename.c_str(), VarName("topMu_inTrigger").c_str(), m_TopMuInTrigger );
+  owner->ConnectVariable( treename.c_str(), VarName("top_isEleMuOverlap").c_str(), m_OverlapEleMu );
+}
+void TopReader::DeclareVariables(){
+  owner->DeclareVariable( o_m_RunNumber, "RunNumber" );
+  owner->DeclareVariable( o_m_EventNumber, "EventNumber" );
+  owner->DeclareVariable( o_m_LumiBlock, "lbn" );
+  owner->DeclareVariable( o_m_PrimaryVertexType, "vxp_type" );
+  owner->DeclareVariable( o_m_PrimaryVertexNumTracks, "vxp_nTracks" );
+  owner->DeclareVariable( o_m_MetForTopAna, "topMET_et" );
+  owner->DeclareVariable( o_m_MetForTopAnaPhi, "topMET_phi" );
+  owner->DeclareVariable( o_m_NumPrimaryVertices, "vxp_n" );
+}
+void TopReader::Reset(){
+ o_m_RunNumber= -999;
+ o_m_EventNumber= -999;
+ o_m_LumiBlock= -999;
+ o_m_PrimaryVertexType.clear();
+ o_m_PrimaryVertexNumTracks.clear();
+ o_m_MetForTopAna= -999;
+ o_m_MetForTopAnaPhi= -999;
+ o_m_NumPrimaryVertices= -999;
+  }
+void TopReader::CopyToOutput(){
+ o_m_RunNumber = m_RunNumber;
+ o_m_EventNumber = m_EventNumber;
+ o_m_LumiBlock = m_LumiBlock;
+ o_m_PrimaryVertexType = std::vector<int>(*m_PrimaryVertexType);
+ o_m_PrimaryVertexNumTracks = std::vector<int>(*m_PrimaryVertexNumTracks);
+ o_m_MetForTopAna = m_MetForTopAna;
+ o_m_MetForTopAnaPhi = m_MetForTopAnaPhi;
+ o_m_NumPrimaryVertices = m_NumPrimaryVertices;
+  }

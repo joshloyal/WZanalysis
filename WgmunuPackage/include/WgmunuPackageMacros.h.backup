@@ -1,0 +1,117 @@
+////../../DukHep/bin/dukhep_create_filter.py -t WGMUNU_FILTER -f Wgmunu DataMacro.dat
+#undef INIT_NULLS_CTOR
+#undef DUKEHEPHEADER_MEMBERS
+#undef CONNECT
+#undef DECLARE
+#undef RESETVAR
+#undef COPYVAR
+
+#define WGMUNU_FILTER 1
+//begin macro definitions
+
+#if DUKHEPFILTER_TYPE == WGMUNU_FILTER
+#define INIT_NULLS_CTOR		\
+m_RunNumber(0),	\
+m_EventNumber(0),	\
+m_lbn(0),	\
+m_larError(0),	\
+m_EF_mu18_MG(0),	\
+m_EF_mu40_MSonly_barrel(0),	\
+m_vxp_n(0),	\
+m_vxp_z(0),	\
+m_vxp_nTracks(0),	\
+m_vxp_trk_n(0)
+#endif
+
+
+#if DUKHEPFILTER_TYPE == WGMUNU_FILTER
+#define DUKEHEPHEADER_MEMBERS                          \
+UInt_t m_RunNumber;	\
+UInt_t o_m_RunNumber;	\
+UInt_t m_EventNumber;	\
+UInt_t o_m_EventNumber;	\
+UInt_t m_lbn;	\
+UInt_t o_m_lbn;	\
+UInt_t m_larError;	\
+UInt_t o_m_larError;	\
+Bool_t m_EF_mu18_MG;	\
+Bool_t o_m_EF_mu18_MG;	\
+Bool_t m_EF_mu40_MSonly_barrel;	\
+Bool_t o_m_EF_mu40_MSonly_barrel;	\
+Int_t m_vxp_n;	\
+Int_t o_m_vxp_n;	\
+std::vector<float>* m_vxp_z;	\
+std::vector<float> o_m_vxp_z;	\
+std::vector<int>* m_vxp_nTracks;	\
+std::vector<int> o_m_vxp_nTracks;	\
+std::vector<int>* m_vxp_trk_n;	\
+std::vector<int> o_m_vxp_trk_n;
+#endif
+
+
+#if DUKHEPFILTER_TYPE == WGMUNU_FILTER
+#define CONNECT( stringTREENAME )                      \
+  {    ConnectVariable( (stringTREENAME), "RunNumber", m_RunNumber );	\
+    ConnectVariable( (stringTREENAME), "EventNumber", m_EventNumber );	\
+    ConnectVariable( (stringTREENAME), "lbn", m_lbn );	\
+    ConnectVariable( (stringTREENAME), "larError", m_larError );	\
+    ConnectVariable( (stringTREENAME), "EF_mu18_MG", m_EF_mu18_MG );	\
+    ConnectVariable( (stringTREENAME), "EF_mu40_MSonly_barrel", m_EF_mu40_MSonly_barrel );	\
+    ConnectVariable( (stringTREENAME), "vxp_n", m_vxp_n );	\
+    ConnectVariable( (stringTREENAME), "vxp_z", m_vxp_z );	\
+    ConnectVariable( (stringTREENAME), "vxp_nTracks", m_vxp_nTracks );	\
+    ConnectVariable( (stringTREENAME), "vxp_trk_n", m_vxp_trk_n );	\
+  }
+#endif
+
+
+#if DUKHEPFILTER_TYPE == WGMUNU_FILTER
+#define DECLARE( stringTREENAME )                      \
+  {    DeclareVariable( o_m_RunNumber, "RunNumber" );	\
+    DeclareVariable( o_m_EventNumber, "EventNumber" );	\
+    DeclareVariable( o_m_lbn, "lbn" );	\
+    DeclareVariable( o_m_larError, "larError" );	\
+    DeclareVariable( o_m_EF_mu18_MG, "EF_mu18_MG" );	\
+    DeclareVariable( o_m_EF_mu40_MSonly_barrel, "EF_mu40_MSonly_barrel" );	\
+    DeclareVariable( o_m_vxp_n, "vxp_n" );	\
+    DeclareVariable( o_m_vxp_z, "vxp_z" );	\
+    DeclareVariable( o_m_vxp_nTracks, "vxp_nTracks" );	\
+    DeclareVariable( o_m_vxp_trk_n, "vxp_trk_n" );	\
+  }
+#endif
+
+
+#if DUKHEPFILTER_TYPE == WGMUNU_FILTER
+#define RESETVAR                      \
+  {    o_m_RunNumber = -999;\
+    o_m_EventNumber = -999;\
+    o_m_lbn = -999;\
+    o_m_larError = -999;\
+    o_m_EF_mu18_MG = -999;\
+    o_m_EF_mu40_MSonly_barrel = -999;\
+    o_m_vxp_n = -999;\
+    o_m_vxp_z.clear();\
+    o_m_vxp_nTracks.clear();\
+    o_m_vxp_trk_n.clear();\
+  }
+#endif
+
+
+#if DUKHEPFILTER_TYPE == WGMUNU_FILTER
+#define COPYVAR                      \
+  {   o_m_RunNumber = m_RunNumber;\
+   o_m_EventNumber = m_EventNumber;\
+   o_m_lbn = m_lbn;\
+   o_m_larError = m_larError;\
+   o_m_EF_mu18_MG = m_EF_mu18_MG;\
+   o_m_EF_mu40_MSonly_barrel = m_EF_mu40_MSonly_barrel;\
+   o_m_vxp_n = m_vxp_n;\
+   o_m_vxp_z = std::vector<float>(*m_vxp_z);\
+   o_m_vxp_nTracks = std::vector<int>(*m_vxp_nTracks);\
+   o_m_vxp_trk_n = std::vector<int>(*m_vxp_trk_n);\
+  }
+#endif
+
+//end definitions WGMUNU_FILTER
+
+//end macro definitions

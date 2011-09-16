@@ -1,0 +1,75 @@
+////bin/dukhep_create_reader.py -n PullReader ../Macros/StructureExtras.dat
+#ifndef PULLREADER
+#define PULLREADER 1
+#include <vector>
+#include <string>
+#include <iostream>
+#include "core/include/SCycleBaseNTuple.h"
+
+
+class PullReader {
+  public:
+  PullReader(SCycleBaseNTuple * owner, const char* collname="jet_Kt6Topo", const char* tcollname="jet_Kt6Truth");
+    virtual ~PullReader(){};   
+    void SetColl(const char* collname) {cname = std::string(collname);};
+    void SetTColl(const char* collname) {tcname = std::string(collname);};
+    std::string VarName(const char * s);
+    void ConnectVariables(std::string treename);
+    void DeclareVariables();
+    void Reset();
+    void CopyToOutput();
+
+    //define your getters here
+  public:
+    SCycleBaseNTuple * owner;    
+    std::string cname, tcname;
+      std::vector<float>* m_JetPt;
+  std::vector<float> o_m_JetPt;
+  std::vector<float>* m_JetEta;
+  std::vector<float> o_m_JetEta;
+  std::vector<float>* m_JetPhi;
+  std::vector<float> o_m_JetPhi;
+  std::vector<float>* m_JetE;
+  std::vector<float> o_m_JetE;
+  std::vector<float>* m_JetPullMag;
+  std::vector<float> o_m_JetPullMag;
+  std::vector<float>* m_JetPullPhi;
+  std::vector<float> o_m_JetPullPhi;
+  std::vector<double>* m_JetWeightSV0;
+  std::vector<int>* m_JetIsUgly;
+  std::vector<int>* m_JetIsBad;
+  Int_t m_NumTruth;
+  Int_t o_m_NumTruth;
+  std::vector<int>* m_TruthStatus;
+  std::vector<int>* m_TruthPdgId;
+  std::vector<int> o_m_TruthPdgId;
+  std::vector<int>* m_TruthBarcode;
+  std::vector<std::vector<int> >* m_TruthParents;
+  std::vector<std::vector<int> >* m_TruthChildren;
+  std::vector<std::vector<int> >* m_TruthParentIndex;
+  std::vector<std::vector<int> > o_m_TruthParentIndex;
+  std::vector<std::vector<int> >* m_TruthChildIndex;
+  std::vector<float>* m_TruthPt;
+  std::vector<float> o_m_TruthPt;
+  std::vector<float>* m_TruthEta;
+  std::vector<float> o_m_TruthEta;
+  std::vector<float>* m_TruthPhi;
+  std::vector<float> o_m_TruthPhi;
+  std::vector<float>* m_TruthMass;
+  std::vector<float> o_m_TruthMass;
+  Int_t m_NumTruthJets;
+  Int_t o_m_NumTruthJets;
+  std::vector<float>* m_TruthJetPt;
+  std::vector<float> o_m_TruthJetPt;
+  std::vector<float>* m_TruthJetEta;
+  std::vector<float> o_m_TruthJetEta;
+  std::vector<float>* m_TruthJetPhi;
+  std::vector<float> o_m_TruthJetPhi;
+  std::vector<float>* m_TruthJetE;
+  std::vector<float> o_m_TruthJetE;
+  std::vector<float>* m_TruthJetPullMag;
+  std::vector<float> o_m_TruthJetPullMag;
+  std::vector<float>* m_TruthJetPullPhi;
+  std::vector<float> o_m_TruthJetPullPhi;
+};
+ #endif

@@ -1,0 +1,289 @@
+///bin/dukhep_create_reader.py -n ElectronReader EleMacros.dat MediumPlusPlus.dat
+#include "include/ElectronReader.h"
+#include "include/DukHepFilter.h"
+#include "DukHep/src/IsEMPlusPlusDefs.h"
+#include "egammaAnalysisUtils/egammaAnalysisUtils/CaloIsoCorrection.h"
+#include <iostream>
+
+ElectronReader::ElectronReader(SCycleBaseNTuple * ownr): owner(ownr),m_idSF(0),
+m_NumElectrons(0),
+m_ElectronTrackPt(0),
+m_ElectronTrackQoverP(0),
+m_ElectronTrackEta(0),
+m_ElectronTrackPhi(0),
+m_ElectronTrackTheta(0),
+m_ElectronVertexZ(0),
+m_ElectronTrackNPixelHits(0),
+m_ElectronTrackNSCTHits(0),
+m_ElectronTrackNBLayerHits(0),
+m_ElectronTrackNTRTHits(0),
+m_ElectronTrackNTRTHighThresholdHits(0),
+m_ElectronTrackD0(0),
+m_ElectronTrackD0SigWRTBeam(0),
+m_ElectronTrackD0SigWRTPV(0),
+m_ElectronUnbiasedTrackD0SigWRTPV(0),
+m_ElectronTrackZ0(0),
+m_ElectronIsoCone20(0),
+m_ElectronAuthor(0),
+m_ElectronMedium(0),
+m_ElectronOQ(0),
+m_ElectronClusterE(0),
+m_ElectronClusterEta(0),
+m_ElectronClusterPhi(0),
+m_ElectronClusterPt(0),
+m_ElectronCharge(0),
+m_ElectronEFDistance(0),
+m_ElectronEFIndex(0),
+m_EFElectronPassed(0),
+m_PrimaryVertexZ(0),
+m_ElectronEtHad(0),
+m_ElectronEtHadOne(0),
+m_ElectronF1(0),
+m_ElectronEminS1(0),
+m_ElectronEmaxS1(0),
+m_ElectronEmax2(0),
+m_ElectronE237(0),
+m_ElectronE277(0),
+m_ElectronWSTot(0),
+m_ElectronWEta2(0),
+m_ElectronDeltaEta1(0),
+m_ElectronREta(0),
+m_ElectronNTRTOutliers(0),
+m_ElectronNBLSharedHits(0),
+m_ElectronNBLayerOutliers(0),
+m_ElectronExpectBLayerHit(0),
+m_ElectronTRTHighTHitsRatio(0),
+m_ElectronTRTHighTOutliersRatio(0),
+m_ElectronNPixelOutliers(0),
+m_ElectronNSCTOutliers(0),
+m_ElectronNSiHits(0),
+m_ElectronTrackIso(0),
+m_ElectronEtaS2(0),
+m_ElectronPointing(0),
+m_ElectronLoose(0),
+m_ElectronTight(0)
+{}
+void ElectronReader::ConnectVariables(std::string treename){
+  owner->ConnectVariable( treename.c_str(), VarName("el_n").c_str(), m_NumElectrons );
+  owner->ConnectVariable( treename.c_str(), VarName("el_trackpt").c_str(), m_ElectronTrackPt );
+  owner->ConnectVariable( treename.c_str(), VarName("el_trackqoverp").c_str(), m_ElectronTrackQoverP );
+  owner->ConnectVariable( treename.c_str(), VarName("el_tracketa").c_str(), m_ElectronTrackEta );
+  owner->ConnectVariable( treename.c_str(), VarName("el_trackphi").c_str(), m_ElectronTrackPhi );
+  owner->ConnectVariable( treename.c_str(), VarName("el_tracktheta").c_str(), m_ElectronTrackTheta );
+  owner->ConnectVariable( treename.c_str(), VarName("el_vertz").c_str(), m_ElectronVertexZ );
+  owner->ConnectVariable( treename.c_str(), VarName("el_nPixHits").c_str(), m_ElectronTrackNPixelHits );
+  owner->ConnectVariable( treename.c_str(), VarName("el_nSCTHits").c_str(), m_ElectronTrackNSCTHits );
+  owner->ConnectVariable( treename.c_str(), VarName("el_nBLHits").c_str(), m_ElectronTrackNBLayerHits );
+  owner->ConnectVariable( treename.c_str(), VarName("el_nTRTHits").c_str(), m_ElectronTrackNTRTHits );
+  owner->ConnectVariable( treename.c_str(), VarName("el_nTRTHighTHits").c_str(), m_ElectronTrackNTRTHighThresholdHits );
+  owner->ConnectVariable( treename.c_str(), VarName("el_trackd0_physics").c_str(), m_ElectronTrackD0 );
+  owner->ConnectVariable( treename.c_str(), VarName("el_tracksigd0beam").c_str(), m_ElectronTrackD0SigWRTBeam );
+  owner->ConnectVariable( treename.c_str(), VarName("el_tracksigd0pv").c_str(), m_ElectronTrackD0SigWRTPV );
+  owner->ConnectVariable( treename.c_str(), VarName("el_tracksigd0pvunbiased").c_str(), m_ElectronUnbiasedTrackD0SigWRTPV );
+  owner->ConnectVariable( treename.c_str(), VarName("el_trackz0").c_str(), m_ElectronTrackZ0 );
+  owner->ConnectVariable( treename.c_str(), VarName("el_Etcone20").c_str(), m_ElectronIsoCone20 );
+  owner->ConnectVariable( treename.c_str(), VarName("el_author").c_str(), m_ElectronAuthor );
+  owner->ConnectVariable( treename.c_str(), VarName("el_medium").c_str(), m_ElectronMedium );
+  owner->ConnectVariable( treename.c_str(), VarName("el_OQ").c_str(), m_ElectronOQ );
+  owner->ConnectVariable( treename.c_str(), VarName("el_cl_E").c_str(), m_ElectronClusterE );
+  owner->ConnectVariable( treename.c_str(), VarName("el_cl_eta").c_str(), m_ElectronClusterEta );
+  owner->ConnectVariable( treename.c_str(), VarName("el_cl_phi").c_str(), m_ElectronClusterPhi );
+  owner->ConnectVariable( treename.c_str(), VarName("el_cl_pt").c_str(), m_ElectronClusterPt );
+  owner->ConnectVariable( treename.c_str(), VarName("el_charge").c_str(), m_ElectronCharge );
+  owner->ConnectVariable( treename.c_str(), VarName("el_EF_index").c_str(), m_ElectronEFIndex );
+  owner->ConnectVariable( treename.c_str(), VarName("trig_EF_el_EF_e20_medium").c_str(), m_EFElectronPassed );
+  owner->ConnectVariable( treename.c_str(), VarName("el_EF_dr").c_str(), m_ElectronEFDistance );
+  owner->ConnectVariable( treename.c_str(), VarName("vxp_z").c_str(), m_PrimaryVertexZ );
+  owner->ConnectVariable( treename.c_str(), VarName("el_Ethad").c_str(), m_ElectronEtHad );
+  owner->ConnectVariable( treename.c_str(), VarName("el_Ethad1").c_str(), m_ElectronEtHadOne );
+  owner->ConnectVariable( treename.c_str(), VarName("el_f1").c_str(), m_ElectronF1);
+  owner->ConnectVariable( treename.c_str(), VarName("el_Emins1").c_str(), m_ElectronEminS1 );
+  owner->ConnectVariable( treename.c_str(), VarName("el_emaxs1").c_str(), m_ElectronEmaxS1 );
+  owner->ConnectVariable( treename.c_str(), VarName("el_Emax2").c_str(), m_ElectronEmax2 );
+  owner->ConnectVariable( treename.c_str(), VarName("el_E237").c_str(), m_ElectronE237 );
+  owner->ConnectVariable( treename.c_str(), VarName("el_E277").c_str(), m_ElectronE277 );
+  owner->ConnectVariable( treename.c_str(), VarName("el_wstot").c_str(), m_ElectronWSTot );
+  owner->ConnectVariable( treename.c_str(), VarName("el_weta2").c_str(), m_ElectronWEta2 );
+  owner->ConnectVariable( treename.c_str(), VarName("el_deltaeta1").c_str(), m_ElectronDeltaEta1 );
+  owner->ConnectVariable( treename.c_str(), VarName("el_reta").c_str(), m_ElectronREta );
+  owner->ConnectVariable( treename.c_str(), VarName("el_nTRTOutliers").c_str(), m_ElectronNTRTOutliers );
+  owner->ConnectVariable( treename.c_str(), VarName("el_nBLSharedHits").c_str(), m_ElectronNBLSharedHits );
+  owner->ConnectVariable( treename.c_str(), VarName("el_nBLayerOutliers").c_str(), m_ElectronNBLayerOutliers );
+  owner->ConnectVariable( treename.c_str(), VarName("el_expectBLayerHit").c_str(), m_ElectronExpectBLayerHit );
+  owner->ConnectVariable( treename.c_str(), VarName("el_TRTHighTHitsRatio").c_str(), m_ElectronTRTHighTHitsRatio );
+  owner->ConnectVariable( treename.c_str(), VarName("el_TRTHighTOutliersRatio").c_str(), m_ElectronTRTHighTOutliersRatio );
+  owner->ConnectVariable( treename.c_str(), VarName("el_nPixelOutliers").c_str(), m_ElectronNPixelOutliers );
+  owner->ConnectVariable( treename.c_str(), VarName("el_nSCTOutliers").c_str(), m_ElectronNSCTOutliers );
+  owner->ConnectVariable( treename.c_str(), VarName("el_nSiHits").c_str(), m_ElectronNSiHits );
+  owner->ConnectVariable( treename.c_str(), VarName("el_ptcone20").c_str(), m_ElectronTrackIso );
+  owner->ConnectVariable( treename.c_str(), VarName("el_etas2").c_str(), m_ElectronEtaS2 );
+  owner->ConnectVariable( treename.c_str(), VarName("el_etap").c_str(), m_ElectronPointing );
+  owner->ConnectVariable( treename.c_str(), VarName("el_loose").c_str(), m_ElectronLoose );
+  owner->ConnectVariable( treename.c_str(), VarName("el_tight").c_str(), m_ElectronTight );
+}
+void ElectronReader::DeclareVariables(){
+  owner->DeclareVariable( o_m_NumElectrons, "el_n" );
+  owner->DeclareVariable( o_m_ElectronTrackPt, "el_trackpt" );
+  owner->DeclareVariable( o_m_ElectronTrackQoverP, "el_trackqoverp" );
+  owner->DeclareVariable( o_m_ElectronTrackEta, "el_tracketa" );
+  owner->DeclareVariable( o_m_ElectronTrackPhi, "el_trackphi" );
+  owner->DeclareVariable( o_m_ElectronTrackD0, "el_trackd0_physics" );
+  owner->DeclareVariable( o_m_ElectronIsoCone20, "el_Etcone20" );
+  owner->DeclareVariable( o_m_ElectronAuthor, "el_author" );
+  owner->DeclareVariable( o_m_ElectronMedium, "el_medium" );
+  owner->DeclareVariable( o_m_ElectronOQ, "el_OQ" );
+  owner->DeclareVariable( o_m_ElectronClusterE, "el_cl_E" );
+  owner->DeclareVariable( o_m_ElectronClusterEta, "el_cl_eta" );
+  owner->DeclareVariable( o_m_ElectronClusterPhi, "el_cl_phi" );
+  owner->DeclareVariable( o_m_ElectronClusterPt, "el_cl_pt" );
+  owner->DeclareVariable( o_m_ElectronCharge, "el_charge" );
+}
+void ElectronReader::Reset(){
+ o_m_NumElectrons= -999;
+ o_m_ElectronTrackPt.clear();
+ o_m_ElectronTrackQoverP.clear();
+ o_m_ElectronTrackEta.clear();
+ o_m_ElectronTrackPhi.clear();
+ o_m_ElectronTrackD0.clear();
+ o_m_ElectronIsoCone20.clear();
+ o_m_ElectronAuthor.clear();
+ o_m_ElectronMedium.clear();
+ o_m_ElectronOQ.clear();
+ o_m_ElectronClusterE.clear();
+ o_m_ElectronClusterEta.clear();
+ o_m_ElectronClusterPhi.clear();
+ o_m_ElectronClusterPt.clear();
+ o_m_ElectronCharge.clear();
+  }
+void ElectronReader::CopyToOutput(){
+ o_m_NumElectrons = m_NumElectrons;
+ o_m_ElectronTrackPt = std::vector<float>(*m_ElectronTrackPt);
+ o_m_ElectronTrackQoverP = std::vector<float>(*m_ElectronTrackQoverP);
+ o_m_ElectronTrackEta = std::vector<float>(*m_ElectronTrackEta);
+ o_m_ElectronTrackPhi = std::vector<float>(*m_ElectronTrackPhi);
+ o_m_ElectronTrackD0 = std::vector<float>(*m_ElectronTrackD0);
+ o_m_ElectronIsoCone20 = std::vector<float>(*m_ElectronIsoCone20);
+ o_m_ElectronAuthor = std::vector<int>(*m_ElectronAuthor);
+ o_m_ElectronMedium = std::vector<int>(*m_ElectronMedium);
+ o_m_ElectronOQ = std::vector<unsigned int>(*m_ElectronOQ);
+ o_m_ElectronClusterE = std::vector<float>(*m_ElectronClusterE);
+ o_m_ElectronClusterEta = std::vector<float>(*m_ElectronClusterEta);
+ o_m_ElectronClusterPhi = std::vector<float>(*m_ElectronClusterPhi);
+ o_m_ElectronClusterPt = std::vector<float>(*m_ElectronClusterPt);
+ o_m_ElectronCharge = std::vector<float>(*m_ElectronCharge);
+}
+
+bool ElectronReader::UseElectronTrack(unsigned int il) {
+  return (m_ElectronMedium->at(il) || (m_ElectronTrackNPixelHits->at(il) + m_ElectronTrackNSCTHits->at(il) > 4));
+}
+
+float ElectronReader::GetElectronTransverseMomentum(unsigned int il){
+  if (UseElectronTrack(il)) return m_ElectronClusterE->at(il)/TMath::CosH(m_ElectronTrackEta->at(il));
+  return m_ElectronClusterPt->at(il);
+}
+
+void ElectronReader::FillElectronFourMomentum(unsigned int il, TLorentzVector & v){
+  if (UseElectronTrack(il))
+    v.SetPtEtaPhiE(m_ElectronClusterE->at(il)/TMath::CosH(m_ElectronTrackEta->at(il)),
+                   m_ElectronTrackEta->at(il),m_ElectronTrackPhi->at(il),m_ElectronClusterE->at(il));
+  else
+    v.SetPtEtaPhiE(m_ElectronClusterPt->at(il),
+                   m_ElectronClusterEta->at(il),m_ElectronClusterPhi->at(il),m_ElectronClusterE->at(il));  
+}
+
+bool ElectronReader::IsTrackElectronExo(unsigned int il) {
+  ///minimum cut for loose jet-electrons
+  if ( (m_ElectronNSiHits->at(il) == 0) || (m_ElectronTrackPt->at(il) < 2.) ) return false; //ptcorrected    
+  return true;
+}
+
+bool ElectronReader::IsSidebandElectronExo(unsigned int il, float etmin) {
+  int author = m_ElectronAuthor->at(il);
+  if ((author != 1) && (author != 3)) return false;
+  float etc = GetElectronTransverseMomentum(il);
+  if (etc < etmin) return false;
+  float aeta = TMath::Abs(m_ElectronClusterEta->at(il)); 
+  if ( aeta > 2.47 || ( (aeta > 1.37) && ( aeta < 1.52 )))  return false;
+  if ((m_ElectronOQ->at(il)&1446)!=0) return false;//el_oq in d3pd for new rel  
+  return true;
+}
+
+bool ElectronReader::IsGoodElectronExo(unsigned int il, float etmin) {
+  int author = m_ElectronAuthor->at(il);
+  if ((author != 1) && (author != 3)) return false;
+  float etc = GetElectronTransverseMomentum(il);
+  if (etc < etmin) return false;
+  float aeta = TMath::Abs(m_ElectronClusterEta->at(il)); 
+  if ( aeta > 2.47 || ( (aeta > 1.37) && ( aeta < 1.52 )))  return false;
+  if ((m_ElectronOQ->at(il)&1446)!=0) return false;//el_oq in d3pd for new rel
+  if ( not m_ElectronMedium->at(il)) return false;
+  return true;
+}
+
+std::pair<float,float> ElectronReader::GetIDScaleFactor(unsigned int il) {
+  if (m_idSF)return m_idSF->scaleFactorMedium(m_ElectronClusterEta->at(il),GetElectronTransverseMomentum(il),0,2); 
+  return std::pair<float,float>(1.0,-1.0);
+}
+
+float ElectronReader::CalcIso(unsigned int il) throw ( SError ) {
+  if (not okMC) {
+    std::cout << "ERROR: you must set mc flag in electron reader class." << std::endl;
+    throw SError(SError::StopExecution);
+  }
+         
+  return CaloIsoCorrection::GetPtCorrectedIsolation(m_ElectronClusterE->at(il),
+						    m_ElectronEtaS2->at(il),
+						    m_ElectronPointing->at(il),
+						    m_ElectronClusterEta->at(il),
+						    0.2,
+						    isMC,
+						    m_ElectronIsoCone20->at(il),
+						    false,
+						    CaloIsoCorrection::ELECTRON);
+}
+
+bool ElectronReader::IsGoodElectronTop(unsigned int il, float etmin) {
+  if (not m_ElectronTight->at(il)) return false; 
+  if (il > m_ElectronAuthor->size()) return false;
+  int author = m_ElectronAuthor->at(il);
+  if ((author != 1) && (author != 3)) return false;
+  float etc = GetElectronTransverseMomentum(il);
+  if (etc < etmin) return false;
+  float aeta = TMath::Abs(m_ElectronClusterEta->at(il)); 
+  if ( aeta > 2.47 || ( (aeta > 1.37) && ( aeta < 1.52 )))  return false;
+  if ((m_ElectronOQ->at(il)&1446)!=0) return false;
+  if ( CalcIso(il) > 0.15*etc ) return false; 
+  return true;
+}
+
+bool ElectronReader::IsMediumPlusPlus(unsigned int il){
+  if (!owner) return false;
+  if (il >= m_ElectronClusterEta->size()) return false;
+  float eT=m_ElectronClusterE->at(il)/TMath::CosH(m_ElectronTrackEta->at(il));
+  float rhad  = DukHepFilter::safeRatio(m_ElectronEtHad->at(il),eT);
+  float rhad1 = DukHepFilter::safeRatio(m_ElectronEtHadOne->at(il),eT);
+  float emax2 = m_ElectronEmax2->at(il);
+  float emax  = m_ElectronEmaxS1->at(il);
+  float demax = DukHepFilter::safeRatio(emax-emax2,emax+emax2);
+  int ntrt = m_ElectronTrackNTRTHits->at(il);
+  int ntrto = m_ElectronNTRTOutliers->at(il);
+  return isMediumPlusPlus(m_ElectronClusterEta->at(il),
+			  eT,
+			  rhad, rhad1, 
+			  m_ElectronREta->at(il),
+			  m_ElectronWEta2->at(il), //is this right?
+			  m_ElectronF1->at(il), 
+			  m_ElectronWSTot->at(il),
+			  demax, 
+			  m_ElectronDeltaEta1->at(il),
+			  m_ElectronTrackD0->at(il),
+			  ((ntrt + ntrto) != 0) ? m_ElectronTRTHighTOutliersRatio->at(il) : 0,//fillerbug
+			  ntrt, ntrto,
+			  m_ElectronNSiHits->at(il),
+			  m_ElectronTrackNPixelHits->at(il),
+			  m_ElectronNPixelOutliers->at(il),			   
+			  m_ElectronTrackNBLayerHits->at(il),
+			  m_ElectronNBLayerOutliers->at(il),
+			  m_ElectronExpectBLayerHit->at(il));
+}
+
