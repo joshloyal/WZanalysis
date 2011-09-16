@@ -26,7 +26,8 @@ pythia(false),
 alpgen(false),
 madgraph(false),
 sherpa(false)
-{
+{   
+    // add a comment to truth?
     if( mcsample == "pythia" ) pythia = true;
     if( mcsample == "alpgen" ) alpgen = true;
     if( mcsample == "madgraph" ) madgraph = true;
