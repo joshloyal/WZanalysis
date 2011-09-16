@@ -135,7 +135,7 @@ std::vector<Muon*> TruthReader::getTruthMuons() {
         }
     }
 
-    sort(TruthMuons, ptMuonSort); // sort muons based on pt
+    sort(TruthMuons.rbegin(), TruthMuons.rend(), AnalysisUtils::ptMuonSort); // sort muons based on pt
     return TruthMuons;
 }
 
