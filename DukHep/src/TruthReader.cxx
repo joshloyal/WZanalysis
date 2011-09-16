@@ -135,7 +135,7 @@ std::vector<Muon*> TruthReader::getTruthMuons() {
         }
     }
 
-    sort(TruthMuons, ptMuonSort); // sort muons based on pt
+    sort(TruthMuons.rbegin(), TruthMuons.rend(), AnalysisUtils::ptMuonSort); // sort muons based on pt
     return TruthMuons;
 }
 
@@ -203,7 +203,8 @@ std::vector<Photon*> TruthReader::getTruthPhotons() {
             } // photon status
         } // if particle is a photon 
     } // loop through MC truth particles
-
+    
+    sort(TruthPhotons.rbegin(), TruthPhotons.rend(), AnalysisUtils::ptPhotonSort); // sort photons in terms of pt
     return TruthPhotons;
 }
 
