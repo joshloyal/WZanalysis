@@ -23,6 +23,7 @@ AnalysisCycle::AnalysisCycle()
     m_MuonReader(this, "mu_staco"), 
     m_PhotonReader(this), 
     m_JetReader(this, "jet_AntiKt4TopoEM"), // for some data it is jet_AntiKt4TopoEM or jet_akt4topoem
+    m_TruthReader(this, "sherpa"),          // include what monte carlo you are using
     vertex(false), Zmass(-9999), eventCutFlow("Event"), RunNumber(0), isMC(false)
 {
   DeclareProperty( "IgnoreGRL", m_prop_skipgrl );
@@ -64,6 +65,7 @@ void AnalysisCycle::BeginInputData( const SInputData& ) throw( SError ) {
   m_MuonReader.DeclareVariables();
   m_PhotonReader.DeclareVariables();
   m_JetReader.DeclareVariables();
+  m_TruthReader.DeclareVariables();
   DeclareVariable(o_Zmass, "Zmass");
   DeclareVariable(o_muonIndex, "mu_index");
   DeclareVariable(o_photonIndex, "ph_index");
@@ -106,6 +108,7 @@ void AnalysisCycle::BeginInputFile( const SInputData& inputData) throw( SError )
       m_MuonReader.ConnectVariables( treename.Data() );
       m_PhotonReader.ConnectVariables( treename.Data() );
       m_JetReader.ConnectVariables( treename.Data() );
+      m_TruthReader.ConnectVariables( treename.Data() );
       CONNECT( treename.Data() ) 
         ;
   //connect any mutable branches (e.g. trigger or MET) which are set by job options
@@ -117,8 +120,8 @@ void AnalysisCycle::BeginInputFile( const SInputData& inputData) throw( SError )
 
 // Section: Event Execution {{{1
 
-#if ANALYSIS_TYPE == ZGMUMU_TYPE
 // Subsection: Zgmumu Analysis
+#if ANALYSIS_TYPE == ZGMUMU_TYPE
 void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw( SError ) {
    
    m_logger << DEBUG << "** Executing Event Selection **" << SLogger::endmsg;
@@ -279,14 +282,28 @@ void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw(
   }
   o_muonIndex.push_back(muon->Index);
   o_muonIndex.push_back(antimuon->Index);
-  //o_photonIndex.push_back(photon->Index);
+  o_photonIndex.push_back(photon->Index);
 
   return; 
 }
 
+// Subsecion: Truth Analysis
 #elif ANALYSIS_TYPE == TRUTH_TYPE
 void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw( SError ) {
+    
+    m_logger << DEBUG << "** Executing Event Selection **" << SLogger::endmsg;
+
+    // Subsection: clear and (re)set all objects used in the event analysis
+    TruthMuons.clear();
+
+    // Get the two muons coming from the Z in the truth bank
+    TruthMuons = m_TruthReader.getTruthMuons();
+
+    std::cout << truthMuons.size() << std::endl;
+
+    return;
 }
+
 #endif
 
 // Section: Cut Flow Logging {{{1

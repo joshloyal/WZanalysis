@@ -87,6 +87,10 @@ std::vector<Jet*> allJets;
 std::vector<Jet*> goodJets;
 std::vector<Jet*> isolatedJets;
 
+// truth members
+TruthReader m_TruthReader;
+std::vector<Muon*> TruthMuons;
+
 // other members
 std::vector<std::pair<Int_t,Int_t> > EventVector;
 RandomDataPeriod mc_dataperiod;
