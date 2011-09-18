@@ -90,6 +90,7 @@ std::vector<Jet*> isolatedJets;
 // truth members
 TruthReader m_TruthReader;
 std::vector<Muon*> TruthMuons;
+std::vector<Photon*> TruthPhotons;
 
 // other members
 std::vector<std::pair<Int_t,Int_t> > EventVector;
