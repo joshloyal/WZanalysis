@@ -300,8 +300,26 @@ void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw(
     
     // Get the two muons coming from the Z in the truth bank
     TruthMuons = m_TruthReader.getTruthMuons();
+    if ( TruthMuons.size() != 2 ) throw SError( SError::SkipEvent );
 
-    std::cout << TruthMuons.size() << std::endl;
+    // TruthReader returns the muons sorted in descending order in terms of pt
+    Muon *muon1 = TruthMuons.at(0);
+    Muon *muon2 = TruthMuons.at(1);
+
+    // lets see if these two muons construct the Z mass peak
+    TLorentzVector z4vector = *muon1 + *muon2;
+    float zMass = z4vector.M()/1000.;
+    Book(TH1F("zmass", "Invariant Mass of the Truth Z Boson;m_{#mu#mu} [GeV];number of events / 1 GeV", 165, 35, 120))->Fill(zMass);
+
+    // now lets transform to the Z boson rest frame
+    AnalysisUtils::cmTransformation(*muon1, z4vector);
+    AnalysisUtils::cmTransformation(*muon2, z4vector);
+
+    // plot the cos(dt*) distribution of the muon
+    if (muon1->Charge < 0. )
+        Book(TH1F("costheta", "Cos(#theta*);Cos(#theta*);Events", 220, -1.1, 1.1))->Fill(muon1->CosTheta());
+    else
+        Book(TH1F("costheta", "Cos(#theta*);Cos(#theta*);Events", 220, -1.1, 1.1))->Fill(muon2->CosTheta());
 
     return;
 }
