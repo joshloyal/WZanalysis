@@ -4,6 +4,7 @@
 #include "include/Photon.h"
 #include "include/AnalysisUtils.h"
 #include <cmath>
+#include <iostream>
 
 TruthReader::TruthReader(SCycleBaseNTuple * ownr, std::string mcsample): owner(ownr),
 mcNumber(0),
@@ -107,7 +108,6 @@ void TruthReader::CopyToOutput(){
 }
 
 std::vector<Muon*> TruthReader::getTruthMuons() {
-   
     // declare some variables used in the selection
     Int_t nTruthMuCand(0);
     const Int_t nMaxTruthCand(2);

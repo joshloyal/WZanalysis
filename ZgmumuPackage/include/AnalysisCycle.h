@@ -18,7 +18,7 @@
 #include "../DukHep/include/ParticleClasses.h"
 
 // This line determines which branches are defined
-#define DUKHEPFILTER_TYPE MONTE_CARLO_FILTER 
+#define DUKHEPFILTER_TYPE ZGMUMU_FILTER 
 #include "ZgmumuPackage/include/ZgmumuPackageMacros.h"
 #undef DUKHEPFILTER_TYPE
 

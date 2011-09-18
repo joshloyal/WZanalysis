@@ -8,6 +8,8 @@
 #include <iostream>
 
 // This line determines which ExecuteEvent method to use
+#define ZGMUMU_TYPE 0 
+#define TRUTH_TYPE 1
 #define ANALYSIS_TYPE TRUTH_TYPE
 
 using AnalysisUtils::dR;
@@ -295,16 +297,18 @@ void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw(
 
     // Subsection: clear and (re)set all objects used in the event analysis
     TruthMuons.clear();
-
+    
     // Get the two muons coming from the Z in the truth bank
     TruthMuons = m_TruthReader.getTruthMuons();
 
-    std::cout << truthMuons.size() << std::endl;
+    std::cout << TruthMuons.size() << std::endl;
 
     return;
 }
 
 #endif
+
+
 
 // Section: Cut Flow Logging {{{1
 void AnalysisCycle::EndMasterInputData( const SInputData& ) throw( SError ) {
