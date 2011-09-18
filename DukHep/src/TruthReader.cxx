@@ -179,7 +179,7 @@ std::vector<Photon*> TruthReader::getTruthPhotons() {
                     Int_t idx = (*mcParent_index)[i][j];
 
                     ipar = 7;
-
+                    
                     if( abs(mcPdgID->at(idx)) == 11 ) {++nTruthPhotonCand_e;    ipar=1;} // e
                     if( abs(mcPdgID->at(idx)) == 13 ) {++nTruthPhotonCand_mu;   ipar=2;} // mu
                     if( abs(mcPdgID->at(idx)) == 15 ) {++nTruthPhotonCand_tau;  ipar=3;} // tau
