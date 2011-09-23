@@ -125,7 +125,7 @@ std::vector<Muon*> TruthReader::getTruthMuons() {
         if (nParentsIdx <= 0) continue;
 
         // muon selection
-        if( (abs(particle_pdgId) == 13) && (mcStatus->at(i) == 1) && (nTruthMuCand < nMaxTruthCand) ) {
+        if( (abs(particle_pdgId) == 13) && (mcStatus->at(i) == 1) && (nTruthMuCand < nMaxTruthCand) ) { //mc_status == 1 means a final state particle (for pythia...)
                 // construct the truth muon and add it to a vector
                 Muon *amuon = new Muon(mcCharge->at(i));
                 amuon->SetPtEtaPhiM(mcPt->at(i), mcEta->at(i), mcPhi->at(i), mcM->at(i));
@@ -138,6 +138,38 @@ std::vector<Muon*> TruthReader::getTruthMuons() {
 
     sort(truthMuons.rbegin(), truthMuons.rend(), AnalysisUtils::ptMuonSort); // sort muons based on pt
     return truthMuons;
+}
+
+std::vector<TLorentzVector*> TruthReader::getTruthNuetrinos() {
+    // declare some variables used in the selection
+    nTruthNuCand = 0;
+    const Int_t nMaxTruthCand(2);
+    truthNuetrinos.clear();
+
+    // loop through the MC truth particles
+    for(int i = 0; i < mcNumber; ++i) {
+
+        // obtain some variables from te leafs
+        Int_t nParents = ( mcParents->at(i) ).size();
+        Int_t nParentsIdx = ( mcParent_index->at(i) ).size();
+        Int_t particle_pdgId = mcPdgID->at(i);
+
+        // particles must have a parent
+        if (nParentsIdx <= 0) continue;
+
+        // nuetrino selection
+        if( (abs(particle_pdgId == 14)) && (mcStatus->at(i) == 1) && (nTruthNuCand < nMaxTruthCand) ) {
+            // construct the truth nuetrino and add it to the container
+            TLorentzVector *nuetrino = new TLorentzVector();
+            nuetrino->SetPtEtaPhiM(mcPt->at(i), mcEta->at(i), mcPhi->at(i), mcM->at(i));
+            truthNuetrinos.push_back(nuetrino);
+
+            ++nTruthNuCand; // add one to the truth nuetrino counters
+        }
+    }
+
+   sort(truthNuetrinos.rbegin(), truthNuetrinos.rend(), AnalysisUtils::ptParticleSort);
+   return truthNuetrinos;
 }
 
 std::vector<Photon*> TruthReader::getTruthPhotons() {

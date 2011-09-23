@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "core/include/SCycleBaseNTuple.h"
+#include "TLorentzVector.h"
 
 class Muon;
 class Photon;
@@ -27,6 +28,7 @@ class TruthReader {
     //------Getter Functions------//
     std::vector<Muon*>   getTruthMuons();
     std::vector<Photon*> getTruthPhotons();
+    std::vector<TLorentzVector*> getTruthNuetrinos();
     bool hasFSRPhoton();
     
   public:
@@ -34,8 +36,10 @@ class TruthReader {
     //------Getter Members------//
     Int_t nTruthPhotonCand;
     Int_t nTruthMuCand;
+    Int_t nTruthNuCand;
     std::vector<Muon*>      truthMuons;
     std::vector<Photon*>    truthPhotons; 
+    std::vector<TLorentzVector*> truthNuetrinos;
 
     //------D3PD Variables------//
     SCycleBaseNTuple * owner;    

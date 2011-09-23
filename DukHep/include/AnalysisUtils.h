@@ -43,6 +43,8 @@ namespace AnalysisUtils {
    // used to sort a vector of Muons in descending order in terms of pt
    bool ptMuonSort(const Muon *lhsMuon, const Muon *rhsMuon);
 
+   // used to sort a vector of TLorentzVectors in descending order in terms of pt
+   bool ptParticleSort(const TLorentzVector *lhsParticle, TLorentzVector *rhsParticle);
    // note: find out how to overload these functions....
    
    //-----transformation functions-----//

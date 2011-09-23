@@ -57,6 +57,11 @@ namespace AnalysisUtils {
         return lhsMuon->Pt < rhsMuon->Pt;
     }
 
+    bool ptParticleSort(const TLorentzVector *lhsParticle, const TLorentzVector *rhsParticle)
+    {
+        return lhsParticle->Pt() < rhsParticle->Pt();
+    }
+
     //-----coordinate transformation functions-----//
 
     void cmTransformation(std::vector<TLorentzVector*>::iterator fourvector, std::vector<TLorentzVector*>::iterator end4Vec, TLorentzVector &boost4Vector) {
