@@ -307,26 +307,28 @@ void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw(
     Muon *muon2 = TruthMuons.at(1);
 
     // get the truth truth photon
-    TruthPhotons = m_TruthReader.getTruthPhotons();
-    if ( TruthPhotons.size() != 1 ) throw SError( SError::SkipEvent );
-    Photon *photon = TruthPhotons.at(0);
+    //TruthPhotons = m_TruthReader.getTruthPhotons();
+    //if ( TruthPhotons.size() != 1 ) throw SError( SError::SkipEvent );
+    //Photon *photon = TruthPhotons.at(0);
+
+    // lets see if this event as FSR photons
+    //if ( m_TruthReader.hasFSRPhoton() ) throw SError( SError::SkipEvent );
     
     // lets construct the three body mass so we can remove the ISR
-    TLorentzVector mmg4vector = *muon1 + *muon2 + *photon;
-    float threeMass = mmg4vector.M()/1000.;
-    
-    // only consider ISR
-    if ( threeMass < 110. ) throw SError( SError::SkipEvent );
+    //TLorentzVector mmg4vector = *muon1 + *muon2 + *photon;
+    //float threeBodyMass = mmg4vector.M()/1000.;
 
+    //if (threeBodyMass <= 110.) throw SError( SError::SkipEvent );
+    
     // lets see if these two muons construct the Z mass peak
     TLorentzVector z4vector = *muon1 + *muon2;
     float zMass = z4vector.M()/1000.;
     Book(TH1F("zmass", "Invariant Mass of the Truth Z Boson;m_{#mu#mu} [GeV];number of events / 1 GeV", 165, 35, 120))->Fill(zMass);
     
     // now lets transform to the Z boson rest frame
-    AnalysisUtils::cmTransformation(*muon1, mmg4vector);
-    AnalysisUtils::cmTransformation(*muon2, mmg4vector);
-    AnalysisUtils::cmTransformation(z4vector, mmg4vector);
+    //AnalysisUtils::cmTransformation(*muon1, mmg4vector);
+    //AnalysisUtils::cmTransformation(*muon2, mmg4vector);
+    //AnalysisUtils::cmTransformation(z4vector, mmg4vector);
     AnalysisUtils::cmTransformation(*muon1, z4vector);
     AnalysisUtils::cmTransformation(*muon2, z4vector);
 

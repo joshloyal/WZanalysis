@@ -27,8 +27,15 @@ class TruthReader {
     //------Getter Functions------//
     std::vector<Muon*>   getTruthMuons();
     std::vector<Photon*> getTruthPhotons();
+    bool hasFSRPhoton();
     
   public:
+
+    //------Getter Members------//
+    Int_t nTruthPhotonCand;
+    Int_t nTruthMuCand;
+    std::vector<Muon*>      truthMuons;
+    std::vector<Photon*>    truthPhotons; 
 
     //------D3PD Variables------//
     SCycleBaseNTuple * owner;    

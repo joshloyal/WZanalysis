@@ -38,6 +38,10 @@ class Photon : public TLorentzVector {
         {   
             // set the photon 4Vector
             this->SetPtEtaPhiE(et, eta, phi, e);
+            Pt = et;
+            Eta = eta;
+            Phi = phi;
+            E = e;
         }
 
     // destructor: default

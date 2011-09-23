@@ -109,10 +109,10 @@ void TruthReader::CopyToOutput(){
 
 std::vector<Muon*> TruthReader::getTruthMuons() {
     // declare some variables used in the selection
-    Int_t nTruthMuCand(0);
+    nTruthMuCand = 0;
     const Int_t nMaxTruthCand(2);
-    std::vector<Muon*> TruthMuons;
-    
+    truthMuons.clear();
+
     // loop through the MC truth particles
     for(int i = 0; i < mcNumber; ++i) {
 
@@ -129,21 +129,22 @@ std::vector<Muon*> TruthReader::getTruthMuons() {
                 // construct the truth muon and add it to a vector
                 Muon *amuon = new Muon(mcCharge->at(i));
                 amuon->SetPtEtaPhiM(mcPt->at(i), mcEta->at(i), mcPhi->at(i), mcM->at(i));
-                TruthMuons.push_back(amuon);
+                amuon->Index = i;
+                truthMuons.push_back(amuon);
 
                 ++nTruthMuCand; // add one to the truth muon counter
         }
     }
 
-    sort(TruthMuons.rbegin(), TruthMuons.rend(), AnalysisUtils::ptMuonSort); // sort muons based on pt
-    return TruthMuons;
+    sort(truthMuons.rbegin(), truthMuons.rend(), AnalysisUtils::ptMuonSort); // sort muons based on pt
+    return truthMuons;
 }
 
 std::vector<Photon*> TruthReader::getTruthPhotons() {
     // declare some variables used in the selection
-    Int_t nTruthPhotonCand(0);
-    const Int_t nMaxTruthCand(1);
-    std::vector<Photon*> TruthPhotons;
+    nTruthPhotonCand = 0;
+    const Int_t nMaxTruthCand(999);
+    truthPhotons.clear();
 
     Int_t nTruthPhotonCand_e(0);
     Int_t nTruthPhotonCand_mu(0);
@@ -194,7 +195,8 @@ std::vector<Photon*> TruthReader::getTruthPhotons() {
                     if( nTruthPhotonCand < nMaxTruthCand) {
                         // construct the truth photon and add it to a vector
                         Photon *aphoton = new Photon(mcPt->at(i), mcEta->at(i), mcPhi->at(i), mcPt->at(i)*std::cosh(mcEta->at(i)) ); // recall p = pt*cosh(eta) 
-                        TruthPhotons.push_back(aphoton);
+                        aphoton->Index = i;
+                        truthPhotons.push_back(aphoton);
 
                         ++nTruthPhotonCand; // add one to the truth photon counter
                     }
@@ -204,7 +206,65 @@ std::vector<Photon*> TruthReader::getTruthPhotons() {
         } // if particle is a photon 
     } // loop through MC truth particles
     
-    sort(TruthPhotons.rbegin(), TruthPhotons.rend(), AnalysisUtils::ptPhotonSort); // sort photons in terms of pt
-    return TruthPhotons;
+    sort(truthPhotons.rbegin(), truthPhotons.rend(), AnalysisUtils::ptPhotonSort); // sort photons in terms of pt
+    return truthPhotons;
 }
 
+bool TruthReader::hasFSRPhoton() {
+    float dR_lep_pho(999.0);
+    bool isISR(false), isFSR(false);
+
+    // check to see if we have found the truth particles yet
+    if ( truthMuons.empty() )   getTruthMuons();
+    if ( truthPhotons.empty() ) getTruthPhotons();
+
+    if ( nTruthPhotonCand > 0 ) {
+        Photon *aphoton = truthPhotons.at(0);
+        int nparidx = ( mcParent_index->at(aphoton->Index) ).size();
+
+        //
+        // Assume that the 1st leading (1st and 2nd leading) leptons are from the W (Z)
+        //
+
+        // for the case of Wg/Zg
+        if ( nTruthMuCand >= 1 ) {
+            Muon *muon1 = truthMuons.at(0);
+            float dR = AnalysisUtils::dR(muon1, aphoton);
+
+            if ( dR < dR_lep_pho ) { dR_lep_pho = dR; }
+        }
+
+        // for the case of the Zg (2 leptons)
+        if (nTruthMuCand >= 2 ) {
+            Muon *muon2 = truthMuons.at(1);
+            float dR = AnalysisUtils::dR(muon2, aphoton);
+
+            if ( dR < dR_lep_pho ) { dR_lep_pho = dR; }
+        }
+        
+        for ( int j = 0; j < nparidx; ++j) {
+            int idx = ( mcParent_index->at(aphoton->Index) ).at(j);
+            int istatus = mcStatus->at(aphoton->Index);
+            int par_istatus = mcStatus->at(idx);
+
+            // if originated from a quark or gluon, we consider that as ISR
+            if ( (abs(mcPdgID->at(idx)) <= 6) || (abs(mcPdgID->at(idx)) == 21) ) { isISR = true; }
+
+            // if originated from a lepton or W/Z, we consider that as FSR
+            if ( (abs(mcPdgID->at(idx)) == 11) || (abs(mcPdgID->at(idx)) == 13) || (abs(mcPdgID->at(idx)) == 15) ||
+                (abs(mcPdgID->at(idx))  == 23) || (abs(mcPdgID->at(idx)) == 24) ) { isFSR = true; }
+        }
+        
+        if (isFSR) {
+            if (nTruthMuCand > 0) {
+                if ( (aphoton->Photon::Pt > 10000.0) && (dR_lep_pho > 0.5) ) { // signal Sherpa and MadGraph is generated with this cut
+                    return true;
+                }
+            }
+            else {
+                return true;
+            }
+        }
+    }
+    return false;
+}
