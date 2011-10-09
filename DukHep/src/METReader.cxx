@@ -62,7 +62,39 @@ void METReader::CopyToOutput(){
  o_m_MET_LocHadTopo_sumet = m_MET_LocHadTopo_sumet;
   }
 
-TLorentzVector METReader::getMuonMET(muonIter amuon, muonIter endmuon, photonIter aphoton, photonIter endphoton) {
+void METReader::correctMuonMET(TLorentzVector &MET, muonIter amuon, muonIter endmuon) {
+    Float_t new_evtMETx, new_evtMETy, new_evtMET;
+
+    // loop over the final selected muons and corrected MET for pt smearing
+    for( /*initalized in the function*/ ; amuon != endmuon; ++amuon) {
+        Muon::mu_dpx += ( (*amuon)->TLorentzVector::Px() - (*amuon)->unCorrectedPx);
+        Muon::mu_dpy += ( (*amuon)->TLorentzVector::Py() - (*amuon)->unCorrectedPy);
+    }
+
+    new_evtMETx = MET.Px() - Muon::mu_dpx;
+    new_evtMETy = MET.Py() - Muon::mu_dpy;
+    new_evtMET  = std::sqrt( (new_evtMETx*new_evtMETx) + (new_evtMETy*new_evtMETy) );
+    
+    MET.SetPxPyPzE(new_evtMETx, new_evtMETy, 0, new_evtMET);
+}
+
+void METReader::correctPhotonMET(TLorentzVector &MET, photonIter aphoton, photonIter endphoton) {
+    Float_t new_evtMETx, new_evtMETy, new_evtMET;
+
+    // loop over the final selected photons and correct MET for pt correction
+    for( /*initialized in the function*/ ; aphoton != endphoton; ++aphoton) {
+        Photon::ph_dpx += ( (*aphoton)->TLorentzVector::Px() - (*aphoton)->unCorrectedPx );
+        Photon::ph_dpy += ( (*aphoton)->TLorentzVector::Py() - (*aphoton)->unCorrectedPy );
+    }
+
+    new_evtMETx = MET.Px() - Photon::ph_dpx;
+    new_evtMETy = MET.Py() - Photon::ph_dpy;
+    new_evtMET  = std::sqrt( (new_evtMETx*new_evtMETx) + (new_evtMETy*new_evtMETy) );
+    
+    MET.SetPxPyPzE(new_evtMETx, new_evtMETy, 0, new_evtMET);
+}
+
+TLorentzVector METReader::getMET() {
     // initialize some variables needed for the calculation
     TLorentzVector MET;
     Float_t myMET_LocHadTopo_etx(0), myMET_LocHadTopo_ety(0);
@@ -71,8 +103,8 @@ TLorentzVector METReader::getMuonMET(muonIter amuon, muonIter endmuon, photonIte
     Float_t myStaco_EvtMETx(0), myStaco_EvtMETy(0), myStaco_EvtMET(0);
 
     // LocalHadTopo coordinate decomposition
-    myMET_LocHadTopo_etx = m_MET_LocHadTopo_et*(std::cos(m_MET_LocHadTopo_phi)) - Muon::mu_dpx; 
-    myMET_LocHadTopo_ety = m_MET_LocHadTopo_et*(std::sin(m_MET_LocHadTopo_phi)) - Muon::mu_dpy; 
+    myMET_LocHadTopo_etx = m_MET_LocHadTopo_et*(std::cos(m_MET_LocHadTopo_phi));  
+    myMET_LocHadTopo_ety = m_MET_LocHadTopo_et*(std::sin(m_MET_LocHadTopo_phi)); 
     
     // MuonBoy coordinate decomposition
     myMET_MuonBoy_etx = m_MET_MuonBoy_et*(std::cos(m_MET_MuonBoy_phi)); 
@@ -85,23 +117,7 @@ TLorentzVector METReader::getMuonMET(muonIter amuon, muonIter endmuon, photonIte
     // sum LocHadTopo and MuonBoy and subtract off RefMuon_Track
     myStaco_EvtMETx = myMET_LocHadTopo_etx + myMET_MuonBoy_etx - myMET_RefMuon_Track_etx; 
     myStaco_EvtMETy = myMET_LocHadTopo_ety + myMET_MuonBoy_ety - myMET_RefMuon_Track_ety; 
-
-    // loop over final selected muon candidates and apply correction
-    for( /* initialized in function */ ; amuon != endmuon; ++amuon ) {
-        Muon::mu_dpx += ( (*amuon)->TLorentzVector::Px() - (*amuon)->unCorrectedPx);
-        Muon::mu_dpy += ( (*amuon)->TLorentzVector::Py() - (*amuon)->unCorrectedPy);
-    }
-
-    // loop over final selected photon candidates and apply correction
-    for( /* initialised in function */ ; aphoton != endphoton; ++aphoton ) {
-        Photon::ph_dpx += ( (*aphoton)->TLorentzVector::Px() - (*aphoton)->unCorrectedPx);
-        Photon::ph_dpy += ( (*aphoton)->TLorentzVector::Py() - (*aphoton)->unCorrectedPy);
-    }
-    
-    // apply correction to the components of the MET
-    myStaco_EvtMETx -= ( Muon::mu_dpx + Photon::ph_dpx );
-    myStaco_EvtMETy -= ( Muon::mu_dpy + Photon::ph_dpy );
-
+ 
     // add in quadrature to get MET
     myStaco_EvtMET  = std::sqrt( (myStaco_EvtMETx*myStaco_EvtMETx) + (myStaco_EvtMETy*myStaco_EvtMETy) );
     

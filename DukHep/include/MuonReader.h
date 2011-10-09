@@ -64,6 +64,8 @@ class MuonReader {
     std::vector<float> o_MuonE;
     std::vector<float>* MuonPt;
     std::vector<float> o_MuonPt;
+    std::vector<float>* MuonMass;
+    std::vector<float> o_MuonMass;
     std::vector<float>* MuonEta;
     std::vector<float> o_MuonEta;
     std::vector<float>* MuonPhi;

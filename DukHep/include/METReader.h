@@ -30,7 +30,9 @@ class METReader {
     void CopyToOutput();
 
     //------Getter Functions------//
-    TLorentzVector getMuonMET(muonIter amuon, muonIter endmuon, photonIter aphoton, photonIter endphoton);
+    static void correctMuonMET(TLorentzVector &MET, muonIter amuon, muonIter endmuon);
+    static void correctPhotonMET(TLorentzVector &MET, photonIter aphoton, photonIter endphoton);
+    TLorentzVector getMET();
     Float_t getSumET() { return m_MET_LocHadTopo_sumet; }
 
   public:

@@ -54,7 +54,7 @@ class Muon : public TLorentzVector {
     float Eta;
     float Phi;
     float E;
-    float M;
+    float Mass;
     float Charge;
 
     // Reconstruction Variables

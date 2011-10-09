@@ -90,6 +90,11 @@ std::vector<Jet*> goodJets;
 // MET members
 METReader   m_METReader;
 
+// truth members
+TruthReader m_TruthReader;
+std::vector<Muon*> truthMuons;
+std::vector<TLorentzVector*> truthNuetrinos;
+
 // other members
 RandomDataPeriod mc_dataperiod;
 int RunNumber;

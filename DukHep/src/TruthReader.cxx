@@ -110,7 +110,6 @@ void TruthReader::CopyToOutput(){
 std::vector<Muon*> TruthReader::getTruthMuons() {
     // declare some variables used in the selection
     nTruthMuCand = 0;
-    const Int_t nMaxTruthCand(2);
     truthMuons.clear();
 
     // loop through the MC truth particles
@@ -125,7 +124,7 @@ std::vector<Muon*> TruthReader::getTruthMuons() {
         if (nParentsIdx <= 0) continue;
 
         // muon selection
-        if( (abs(particle_pdgId) == 13) && (mcStatus->at(i) == 1) && (nTruthMuCand < nMaxTruthCand) ) { //mc_status == 1 means a final state particle (for pythia...)
+        if( (abs(particle_pdgId) == 13) && (mcStatus->at(i) == 1) ) { //mc_status == 1 means a final state particle (for pythia...)
                 // construct the truth muon and add it to a vector
                 Muon *amuon = new Muon(mcCharge->at(i));
                 amuon->SetPtEtaPhiM(mcPt->at(i), mcEta->at(i), mcPhi->at(i), mcM->at(i));
@@ -143,7 +142,6 @@ std::vector<Muon*> TruthReader::getTruthMuons() {
 std::vector<TLorentzVector*> TruthReader::getTruthNuetrinos() {
     // declare some variables used in the selection
     nTruthNuCand = 0;
-    const Int_t nMaxTruthCand(2);
     truthNuetrinos.clear();
 
     // loop through the MC truth particles
@@ -158,7 +156,7 @@ std::vector<TLorentzVector*> TruthReader::getTruthNuetrinos() {
         if (nParentsIdx <= 0) continue;
 
         // nuetrino selection
-        if( (abs(particle_pdgId == 14)) && (mcStatus->at(i) == 1) && (nTruthNuCand < nMaxTruthCand) ) {
+        if( (abs(particle_pdgId) == 14) && (mcStatus->at(i) == 1) ) {
             // construct the truth nuetrino and add it to the container
             TLorentzVector *nuetrino = new TLorentzVector();
             nuetrino->SetPtEtaPhiM(mcPt->at(i), mcEta->at(i), mcPhi->at(i), mcM->at(i));
@@ -168,14 +166,13 @@ std::vector<TLorentzVector*> TruthReader::getTruthNuetrinos() {
         }
     }
 
-   sort(truthNuetrinos.rbegin(), truthNuetrinos.rend(), AnalysisUtils::ptParticleSort);
+   //sort(truthNuetrinos.rbegin(), truthNuetrinos.rend(), AnalysisUtils::ptParticleSort);
    return truthNuetrinos;
 }
 
 std::vector<Photon*> TruthReader::getTruthPhotons() {
     // declare some variables used in the selection
     nTruthPhotonCand = 0;
-    const Int_t nMaxTruthCand(999);
     truthPhotons.clear();
 
     Int_t nTruthPhotonCand_e(0);
@@ -224,14 +221,12 @@ std::vector<Photon*> TruthReader::getTruthPhotons() {
                 
                 // select the photon if it is coming from the above sources
                 if( (ipar >= 1) && (ipar <= 6) ) {
-                    if( nTruthPhotonCand < nMaxTruthCand) {
-                        // construct the truth photon and add it to a vector
-                        Photon *aphoton = new Photon(mcPt->at(i), mcEta->at(i), mcPhi->at(i), mcPt->at(i)*std::cosh(mcEta->at(i)) ); // recall p = pt*cosh(eta) 
-                        aphoton->Index = i;
-                        truthPhotons.push_back(aphoton);
+                    // construct the truth photon and add it to a vector
+                    Photon *aphoton = new Photon(mcPt->at(i), mcEta->at(i), mcPhi->at(i), mcPt->at(i)*std::cosh(mcEta->at(i)) ); // recall p = pt*cosh(eta) 
+                    aphoton->Index = i;
+                    truthPhotons.push_back(aphoton);
 
-                        ++nTruthPhotonCand; // add one to the truth photon counter
-                    }
+                    ++nTruthPhotonCand; // add one to the truth photon counter
                 }
 
             } // photon status
@@ -300,3 +295,5 @@ bool TruthReader::hasFSRPhoton() {
     }
     return false;
 }
+
+// make a pt cut on the photon (we are looking at high pt photon events)!

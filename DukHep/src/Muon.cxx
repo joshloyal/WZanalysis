@@ -10,7 +10,7 @@
 
 // STL include(s)
 #include <iostream>
-
+#include <cmath>
 // class include
 #include "DukHep/include/Muon.h"
 
@@ -55,6 +55,7 @@ void Muon::SmearPt(Int_t EventNumber) {
 
 TLorentzVector Muon::getTransverseFourVector() {
     TLorentzVector tmuon;
-    tmuon.SetPtEtaPhiE(Pt, 0, Phi, Pt);
+    float muonET = std::sqrt( Pt*Pt + this->M() );
+    tmuon.SetPtEtaPhiE(Pt, 0, Phi, muonET);
     return tmuon;
 }

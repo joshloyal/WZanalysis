@@ -7,6 +7,12 @@
 #include <algorithm>
 #include <iostream>
 
+// This line determines which ExecuteEvent method to use
+#define WGMUNU_TYPE 0
+#define WMUNU_TYPE 1
+#define TRUTH_TYPE 2
+#define ANALYSIS_TYPE TRUTH_TYPE
+
 using AnalysisUtils::dR;
 
 ClassImp( WgmunuCycle );
@@ -17,10 +23,11 @@ WgmunuCycle::WgmunuCycle()
   : DukHepFilter(),
     // Macro initializing the stl vectors that access the tree
     INIT_NULLS_CTOR,
-    m_MuonReader(this, "mu"), 
+    m_MuonReader(this, "mu_staco"), 
     m_PhotonReader(this), 
-    m_JetReader(this, "jet"), // for some data it is jet_AntiKt4TopoEM or jet_akt4topoem
+    m_JetReader(this, "jet_AntiKt4TopoEM"), // for some data it is jet_AntiKt4TopoEM or jet_akt4topoem
     m_METReader(this),
+    m_TruthReader(this, "pythia"),  // include what monte carlo you are using
     vertex(false), Wtransmass(-9999), eventCutFlow("Event"), RunNumber(0), isMC(false)  
 {
   DeclareProperty( "IgnoreGRL", m_prop_skipgrl );
@@ -64,6 +71,7 @@ void WgmunuCycle::BeginInputData( const SInputData& ) throw( SError ) {
   m_PhotonReader.DeclareVariables();
   m_JetReader.DeclareVariables();
   m_METReader.DeclareVariables();
+  m_TruthReader.DeclareVariables();
   DeclareVariable(o_Wtransmass, "Wtransmass");
   DeclareVariable(o_muonIndex, "mu_index");
   DeclareVariable(o_photonIndex, "ph_index");
@@ -109,6 +117,7 @@ void WgmunuCycle::BeginInputFile( const SInputData& inputData) throw( SError ) {
       m_PhotonReader.ConnectVariables( treename.Data() );
       m_JetReader.ConnectVariables( treename.Data() );
       m_METReader.ConnectVariables( treename.Data() );
+      m_TruthReader.ConnectVariables( treename.Data() );
       CONNECT( treename.Data() ) 
         ;
   //connect any mutable branches (e.g. trigger or MET) which are set by job options
@@ -119,6 +128,9 @@ void WgmunuCycle::BeginInputFile( const SInputData& inputData) throw( SError ) {
 }
 
 // Section: Event Execution {{{1_________________________________________________________
+
+// Subsection: W->munu + g
+#if ANALYSIS_TYPE == WGMUNU_TYPE
 void WgmunuCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw( SError ) {
    
    m_logger << DEBUG << "** Executing Event Selection **" << SLogger::endmsg;
@@ -267,7 +279,7 @@ void WgmunuCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw( S
   eventCutFlow.passCut();
 
   m_logger << DEBUG << "** Found a W **" << SLogger::endmsg;
- 
+  
   // Subsection: Photon Selection
 
   if( goodPhotons.size() < 1 ) throw SError( SError::SkipEvent );
@@ -286,9 +298,12 @@ void WgmunuCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw( S
   eventCutFlow.passCut();
  
   m_logger << DEBUG << "** Selected Isolated Photon **" << SLogger::endmsg;
-
+  
   m_logger << DEBUG << "Event passed.  Copying variables to output tree." << SLogger::endmsg;
 
+
+  Book(TH1F("wmass", "Invariant Mass of the Truth W Boson;m_{#mu#nu} [GeV]; number of events / 1 GeV", 165, 35, 120))->Fill(Wtransmass);
+  
   // copy output variables to the output tree
   COPYVAR
     ;
@@ -298,7 +313,7 @@ void WgmunuCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw( S
   m_JetReader.CopyToOutput();
   m_METReader.CopyToOutput();
 
-
+ 
   o_Wtransmass = Wtransmass;
   o_muonIndex.push_back(muon->Index);
   o_photonIndex.push_back(photon->Index);
@@ -307,6 +322,170 @@ void WgmunuCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw( S
 
   return;
 }
+
+// Subsection: W->munu 
+#elif ANALYSIS_TYPE == WMUNU_TYPE
+void WgmunuCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw( SError ) {
+    
+    m_logger << DEBUG << "** Executing Event Selection **" << SLogger::endmsg;
+    
+    // Subsection: clear and (re)set all objects used in the event analysis
+    RESETVAR
+      ;
+
+    // clear particle reader variables
+    m_MuonReader.Reset();
+    m_METReader.Reset();
+
+    // clear and (re)set all objects used in the event analysis
+    // --
+    vertex = false;
+    Wtransmass = -999;
+    allMuons.clear();
+    goodMuons.clear();
+    eventCutFlow.resetCutFlow();
+
+    // used in mc to correct for Lar problem  
+    if( inputData.GetType() == "MC") {
+        mc_dataperiod.SetSeed(m_EventNumber);
+        RunNumber = mc_dataperiod.GetDataPeriod();
+    }
+    // --
+    
+    eventCutFlow.passCut();
+
+    // Subsection: Check GoodRunsList {{{2
+
+    // check whether we are running over data or monte carlo
+    if( !( m_prop_skipgrl ) && ( ( inputData.GetType() == "data" ) || ( inputData.GetType() == "Data" )) ) {
+        if( ! testGRL(m_RunNumber, m_lbn) ) throw SError( SError::SkipEvent );
+    }
+    eventCutFlow.passCut();
+
+    m_logger << DEBUG << "** Passed goodrun cut **" << SLogger::endmsg;
+
+
+    // Subsection: Check Trigger {{{2
+    //--
+    if( (!m_EF_mu18_MG) && (!m_EF_mu40_MSonly_barrel) ) throw SError( SError::SkipEvent );
+    eventCutFlow.passCut();
+
+
+    // Subsection: Vertex Selection {{{2 
+    //--
+    // require the first vertex to be good? (put this in latter)
+    for(int t = 0; t < m_vxp_n; t++) {
+        if( (m_vxp_trk_n->at(t) >= 2) && (fabs(m_vxp_z->at(t)) < 200) ) { // m_vxp_type->at(t) == 1 ? (make sure the vertex is primary)
+            vertex = true;
+            break;
+        }
+    } 
+    if(!vertex) throw SError( SError::SkipEvent );
+    eventCutFlow.passCut();
+
+    m_logger << DEBUG << "** Passed PreSelection **" << SLogger::endmsg;
+
+    // Subsection: Particle Selection 
+
+    // good muon selection
+    m_MuonReader.getMuons(m_EventNumber, allMuons);                         // places all the muons in the event in a vector
+    muSelector.getGoodMuons(allMuons.begin(), allMuons.end(), goodMuons);   // select all the good muons and place them in a vector
+    
+  
+    // get the MET for this event (for MC this must be done after Muons::getMuons is called -- to correct for oversmearing)
+    TLorentzVector MET = m_METReader.getMET();
+    METReader::correctMuonMET(MET, goodMuons.begin(), goodMuons.end());
+    eventCutFlow.passCut();
+
+    // Subsection: Muon Selection
+    if( goodMuons.size() != 1 ) throw SError( SError::SkipEvent );
+
+    // get the highest pt muon
+    sort(goodMuons.rbegin(), goodMuons.rend(), AnalysisUtils::ptMuonSort);  // sort muons in descending order in terms of pt
+    Muon *muon = goodMuons.at(0);
+    eventCutFlow.passCut();
+
+    m_logger << DEBUG << "** Found at least one god muon **" << SLogger::endmsg;
+
+    // Subsection: MET Cut
+    if( MET.Pt() < 25000. ) throw SError( SError::SkipEvent );
+    eventCutFlow.passCut();
+
+    m_logger << DEBUG << "** Passed MET Cut **" << SLogger::endmsg;
+
+    // Subsection: W Boson Selection
+    TLorentzVector wT4vector = MET + muon->getTransverseFourVector();
+    Wtransmass = wT4vector.M()/1000.;
+
+    // apply mass cut
+    if( Wtransmass <= 40. ) throw SError( SError::SkipEvent );
+    eventCutFlow.passCut();
+
+    m_logger << DEBUG << "** Found a W **" << SLogger::endmsg;
+
+    m_logger << DEBUG << "Event passed. Copying variables to output tree." << SLogger::endmsg;
+
+    Book(TH1F("wmass", "Invariant Mass of the Truth W Boson;m_{#mu#nu} [GeV]; number of events / 1 GeV", 165, 35, 200))->Fill(Wtransmass);
+    Book(TH1F("met", "Missing Transverse Energy;E_{T} [GeV]; number of events", 100, 0, 200))->Fill(MET.Pt()/1000.);
+    Book(TH1F("muonPt", "Muon Pt Distribution;P_{T} [GeV]; number of events", 60, 0, 120))->Fill(muon->TLorentzVector::Pt()/1000.);
+    // copy output variables to the output tree
+    COPYVAR
+        ;
+
+    m_MuonReader.CopyToOutput();
+    m_METReader.CopyToOutput();
+
+ 
+    o_Wtransmass = Wtransmass;
+    o_muonIndex.push_back(muon->Index);
+    o_MET = MET.Pt();
+    o_METphi = MET.Phi();
+
+    return;
+}
+
+// Subsection: W->munu truth
+#elif ANALYSIS_TYPE == TRUTH_TYPE
+void WgmunuCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw( SError ) {
+    
+    m_logger << DEBUG << "** Executing Event Selection **" << SLogger::endmsg;
+
+    // Subsection: clear and (re)set all objects used in the event analysis
+    truthMuons.clear();
+    truthNuetrinos.clear();
+
+    // get the muon coming from the W in the truth bank
+    truthMuons = m_TruthReader.getTruthMuons();
+    if ( truthMuons.size() != 1 ) throw SError( SError::SkipEvent );
+    
+    // TruthReader returns the muons sorted in descending order in terms of pt
+    Muon *muon = truthMuons.at(0);
+    
+    // get the truth nuetrino coming from the W
+    truthNuetrinos = m_TruthReader.getTruthNuetrinos();
+    if ( truthNuetrinos.size() != 1 ) throw SError( SError::SkipEvent );
+    
+    // TruthReader returns the nuetrinos sorted in descending order in terms of pt
+    TLorentzVector *nuetrino = truthNuetrinos.at(0);
+
+    // lets see if these particles construct the W mass peak
+    TLorentzVector w4vector = *muon + *nuetrino;
+    float wMass = w4vector.M()/1000.;
+    Book(TH1F("wmass", "Invariant Mass of the Truth W Boson;m_{#mu#nu} [GeV]; number of events / 1 GeV", 165, 35, 120))->Fill(wMass);
+    
+    // now lets transform to the W boson rest frame
+    AnalysisUtils::cmTransformation(*muon, w4vector);
+    AnalysisUtils::cmTransformation(*nuetrino, w4vector);
+
+    // plot the cos(dt*) distribution of the muon
+    if ( muon->Charge < 0 )
+        Book(TH1F("muon_costheta", "Cos(#theta*);Cos(#theta*);Events", 220, -1.1, 1.1))->Fill(muon->CosTheta());
+    if ( muon->Charge > 0 )
+        Book(TH1F("amuon_costheta", "Cos(#theta*);Cos(#theta*);Events", 220, -1.1, 1.1))->Fill(muon->CosTheta());
+    
+    return;
+}
+#endif
 
 // Section: Cut Flow Logging {{{1_______________________________________________________________
 void WgmunuCycle::EndMasterInputData( const SInputData& ) throw( SError ) {

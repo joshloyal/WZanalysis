@@ -307,18 +307,19 @@ void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw(
     Muon *muon2 = TruthMuons.at(1);
 
     // get the truth truth photon
-    //TruthPhotons = m_TruthReader.getTruthPhotons();
-    //if ( TruthPhotons.size() != 1 ) throw SError( SError::SkipEvent );
-    //Photon *photon = TruthPhotons.at(0);
+    TruthPhotons = m_TruthReader.getTruthPhotons();
+    if ( TruthPhotons.size() != 1 ) throw SError( SError::SkipEvent );
+    Photon *photon = TruthPhotons.at(0);
 
     // lets see if this event as FSR photons
-    //if ( m_TruthReader.hasFSRPhoton() ) throw SError( SError::SkipEvent );
-    
-    // lets construct the three body mass so we can remove the ISR
-    //TLorentzVector mmg4vector = *muon1 + *muon2 + *photon;
-    //float threeBodyMass = mmg4vector.M()/1000.;
+    if ( m_TruthReader.hasFSRPhoton() ) throw SError( SError::SkipEvent );
+    //if ( photon->TLorentzVector::Pt() <= 40000 ) throw SError( SError::SkipEvent );
 
-    //if (threeBodyMass <= 110.) throw SError( SError::SkipEvent );
+    // lets construct the three body mass so we can remove the ISR
+    TLorentzVector mmg4vector = *muon1 + *muon2 + *photon;
+    float threeBodyMass = mmg4vector.M()/1000.;
+
+    if (threeBodyMass <= 110.) throw SError( SError::SkipEvent );
     
     // lets see if these two muons construct the Z mass peak
     TLorentzVector z4vector = *muon1 + *muon2;
@@ -336,7 +337,7 @@ void AnalysisCycle::ExecuteEvent( const SInputData &inputData, Double_t ) throw(
     if (muon1->Charge < 0. )
         Book(TH1F("costheta", "Cos(#theta*);Cos(#theta*);Events", 220, -1.1, 1.1))->Fill(muon1->CosTheta());
     else
-        Book(TH1F("costheta", "Cos(#theta*);Cos(#theta*);Events", 220, -1.1, 1.1))->Fill(muon2->CosTheta());
+        Book(TH1F("acostheta", "Cos(#theta*);Cos(#theta*);Events", 220, -1.1, 1.1))->Fill(muon2->CosTheta());
 
     return;
 }

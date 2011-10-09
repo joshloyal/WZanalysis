@@ -6,6 +6,7 @@
 MuonReader::MuonReader(SCycleBaseNTuple *ownr, const char *collname): owner(ownr), cname(collname), isMC(false),
 MuonE(0),
 MuonPt(0),
+MuonMass(0),
 MuonEta(0),
 MuonPhi(0),
 MuonPx(0),
@@ -45,6 +46,7 @@ NumberofMuons(0)
 void MuonReader::ConnectVariables(std::string treename){
   owner->ConnectVariable( treename.c_str(), VarName("mu_E").c_str(), MuonE );
   owner->ConnectVariable( treename.c_str(), VarName("mu_pt").c_str(), MuonPt );
+  owner->ConnectVariable( treename.c_str(), VarName("mu_m").c_str(), MuonMass );
   owner->ConnectVariable( treename.c_str(), VarName("mu_eta").c_str(), MuonEta );
   owner->ConnectVariable( treename.c_str(), VarName("mu_phi").c_str(), MuonPhi );
   owner->ConnectVariable( treename.c_str(), VarName("mu_px").c_str(), MuonPx );
@@ -86,6 +88,7 @@ void MuonReader::ConnectVariables(std::string treename){
 void MuonReader::DeclareVariables(){
   owner->DeclareVariable( o_MuonE, "mu_E" );
   owner->DeclareVariable( o_MuonPt, "mu_pt" );
+  owner->DeclareVariable( o_MuonMass, "mu_m" );
   owner->DeclareVariable( o_MuonEta, "mu_eta" );
   owner->DeclareVariable( o_MuonPhi, "mu_phi" );
   owner->DeclareVariable( o_MuonPx, "mu_px" );
@@ -123,6 +126,7 @@ void MuonReader::DeclareVariables(){
 void MuonReader::Reset(){
  o_MuonE.clear();
  o_MuonPt.clear();
+ o_MuonMass.clear();
  o_MuonEta.clear();
  o_MuonPhi.clear();
  o_MuonPx.clear();
@@ -160,6 +164,7 @@ void MuonReader::Reset(){
 void MuonReader::CopyToOutput(){
  o_MuonE = std::vector<float>(*MuonE);
  o_MuonPt = std::vector<float>(*MuonPt);
+ o_MuonMass = std::vector<float>(*MuonMass);
  o_MuonEta = std::vector<float>(*MuonEta);
  o_MuonPhi = std::vector<float>(*MuonPhi);
  o_MuonPx = std::vector<float>(*MuonPx);
@@ -205,6 +210,7 @@ void MuonReader::getMuons(Int_t EventNumber, std::vector<Muon*> &muonVec) {
         Muon *muon = new Muon(MuonPt->at(i), MuonEta->at(i), MuonPhi->at(i), MuonE->at(i), MuonCharge->at(i));
         
         // set muon variables
+        muon->Mass             = MuonMass->at(i);
         muon->Author        = MuonAuthor->at(i);
         muon->IsCombined    = MuonIsCombined->at(i);
         muon->EtCone20      = MuonEtCone20->at(i);
@@ -243,11 +249,11 @@ void MuonReader::getMuons(Int_t EventNumber, std::vector<Muon*> &muonVec) {
         muon->Index             = i;
         muon->unCorrectedPx     = muon->TLorentzVector::Px();
         muon->unCorrectedPy     = muon->TLorentzVector::Py();
-
+       
        if(isMC) {
             muon->SmearPt(EventNumber);
         }
-         
+        
         // place the muons in a vector
         muonVec.push_back(muon);
     
@@ -260,6 +266,7 @@ Muon* MuonReader::getMuon(Int_t EventNumber, Int_t i) {
     Muon *muon = new Muon(MuonPt->at(i), MuonEta->at(i), MuonPhi->at(i), MuonE->at(i), MuonCharge->at(i));
         
     // set muon variables
+    muon->Mass          = MuonMass->at(i);
     muon->Author        = MuonAuthor->at(i);
     muon->IsCombined    = MuonIsCombined->at(i);
     muon->EtCone20      = MuonEtCone20->at(i);
